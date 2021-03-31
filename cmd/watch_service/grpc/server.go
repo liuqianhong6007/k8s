@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -56,29 +57,6 @@ func (s *Server) Watch(in *protocol.MatchPodCondition, stream protocol.WatchServ
 		return nil
 	}
 
-	podList, err := s.clientset.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{
-		LabelSelector: label,
-	})
-	if err != nil {
-		stream.Send(&protocol.MatchPodResponse{
-			Status: protocol.MatchPodResponse_UnknownError,
-		})
-		log.Println(err)
-		return err
-	}
-
-	podMap := make(map[string]interface{})
-	for _, pod := range podList.Items {
-		podMap[pod.Name] = pod
-		buf, _ := json.Marshal(pod)
-		stream.Send(&protocol.MatchPodResponse{
-			Status: protocol.MatchPodResponse_Ok,
-			Name:   pod.Name,
-			Detail: string(buf),
-			Action: protocol.MatchPodResponse_Add,
-		})
-	}
-
 	watcher, err := s.clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: label,
 	})
@@ -103,14 +81,28 @@ func (s *Server) Watch(in *protocol.MatchPodCondition, stream protocol.WatchServ
 
 		switch event.Type {
 		case watch.Added:
+			pod, ok := event.Object.(*v1.Pod)
+			if !ok {
+				continue
+			}
+			buff, _ := json.Marshal(pod)
 			stream.Send(&protocol.MatchPodResponse{
 				Status: protocol.MatchPodResponse_Ok,
 				Action: protocol.MatchPodResponse_Add,
+				Name:   pod.Name,
+				Detail: string(buff),
 			})
 		case watch.Deleted:
+			pod, ok := event.Object.(*v1.Pod)
+			if !ok {
+				continue
+			}
+			buff, _ := json.Marshal(pod)
 			stream.Send(&protocol.MatchPodResponse{
 				Status: protocol.MatchPodResponse_Ok,
 				Action: protocol.MatchPodResponse_Delete,
+				Name:   pod.Name,
+				Detail: string(buff),
 			})
 		}
 	}
