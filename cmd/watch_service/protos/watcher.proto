@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "grpc/protocol";
+
+service WatchService {
+  rpc Watch(MatchPodCondition) returns(stream MatchPodResponse) {}
+}
+
+message MatchPodCondition{
+  string namespace = 1; // 命名空间
+  string label_selector = 2; // 标签匹配
+}
+
+message MatchPodResponse{
+  enum MatchPodResponseStatus {
+    Ok = 0; // 成功
+    ParamError = 1; // 请求参数错误
+    UnknownError = 2; // 未知错误
+  }
+  enum Action{
+    Add = 0; // 添加
+    Delete = 1; // 删除
+  }
+  MatchPodResponseStatus status = 1; // 返回状态
+  string name = 2; // pod 名称
+  string detail = 3; // pod 详情
+  Action action = 4; // 行为
+}
