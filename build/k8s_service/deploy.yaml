@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: k8s-test-svc
+  name: k8s-service-svc
 spec:
   selector:
-    app: k8s-test
+    app: k8s-service
   ports:
-  - name: k8s-test-port
+  - name: k8s-service-port
     port: 8082
     protocol: TCP
 
@@ -15,20 +15,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: k8s-test-deploy
+  name: k8s-service-deploy
 spec:
   selector:
     matchLabels:
-      app: k8s-test
+      app: k8s-service
   replicas: 1
   template:
     metadata:
       labels:
-        app: k8s-test
+        app: k8s-service
     spec:
       containers:
-      - name: k8s-test
-        image:  lqha.xyz/k8s-test:latest
+      - name: k8s-service
+        image:  lqha.xyz/k8s_service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8082
@@ -41,9 +41,9 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: k8s-test-cm
+          name: k8s-service-cm
           items:
-            - key: k8s-test-config
+            - key: k8s-service-config
               path: config.yaml
 
 ---
@@ -51,9 +51,9 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: k8s-test-cm
+  name: k8s-service-cm
 data:
-  k8s-test-config: |
+  k8s-service-config: |
     host: 0.0.0.0
     port: 8082
     inner: true

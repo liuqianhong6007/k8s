@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: watch-service-svc
+spec:
+  selector:
+    app: watch-service
+  ports:
+  - name: watch-service-port
+    port: 8083
+    protocol: TCP
+
+--- 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watch-service-deploy
+spec:
+  selector:
+    matchLabels:
+      app: watch-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: watch-service
+    spec:
+      containers:
+      - name: watch-service
+        image:  lqha.xyz/watch_service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+  
+
