@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"testing"
-	"time"
 
 	"google.golang.org/grpc"
 
@@ -18,13 +17,11 @@ func newWatchServiceClient(addr string) protocol.WatchServiceClient {
 	return protocol.NewWatchServiceClient(conn)
 }
 
-func TestServer_Watch(t *testing.T) {
-	client := newWatchServiceClient("localhost:8082")
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	stream, err := client.Watch(ctx, &protocol.MatchPodCondition{
+func TestServer_WatchPod(t *testing.T) {
+	client := newWatchServiceClient("localhost:18083")
+	stream, err := client.WatchPod(context.Background(), &protocol.MatchCondition{
 		Namespace:     "default",
-		LabelSelector: "app=k8s-test",
+		LabelSelector: "app=k8s-service",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -34,10 +31,10 @@ func TestServer_Watch(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if rsp.Status == protocol.MatchPodResponse_Ok {
-			t.Logf("[INFO] podname: %s,action: %d,detail: %s\n", rsp.Name, rsp.Action, rsp.Detail)
+		if rsp.Status == protocol.WatchResponse_Ok {
+			t.Logf("[pod] name: %s,action: %d", rsp.Name, rsp.Action)
 		} else {
-			t.Logf("[ERROR] status: %d", rsp.Status)
+			t.Logf("[pod] status: %d", rsp.Status)
 		}
 	}
 }

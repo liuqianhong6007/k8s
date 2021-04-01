@@ -17,7 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WatchServiceClient interface {
-	Watch(ctx context.Context, in *MatchPodCondition, opts ...grpc.CallOption) (WatchService_WatchClient, error)
+	WatchPod(ctx context.Context, in *MatchCondition, opts ...grpc.CallOption) (WatchService_WatchPodClient, error)
 }
 
 type watchServiceClient struct {
@@ -28,12 +28,12 @@ func NewWatchServiceClient(cc grpc.ClientConnInterface) WatchServiceClient {
 	return &watchServiceClient{cc}
 }
 
-func (c *watchServiceClient) Watch(ctx context.Context, in *MatchPodCondition, opts ...grpc.CallOption) (WatchService_WatchClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_WatchService_serviceDesc.Streams[0], "/WatchService/Watch", opts...)
+func (c *watchServiceClient) WatchPod(ctx context.Context, in *MatchCondition, opts ...grpc.CallOption) (WatchService_WatchPodClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_WatchService_serviceDesc.Streams[0], "/WatchService/WatchPod", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &watchServiceWatchClient{stream}
+	x := &watchServiceWatchPodClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -43,17 +43,17 @@ func (c *watchServiceClient) Watch(ctx context.Context, in *MatchPodCondition, o
 	return x, nil
 }
 
-type WatchService_WatchClient interface {
-	Recv() (*MatchPodResponse, error)
+type WatchService_WatchPodClient interface {
+	Recv() (*WatchResponse, error)
 	grpc.ClientStream
 }
 
-type watchServiceWatchClient struct {
+type watchServiceWatchPodClient struct {
 	grpc.ClientStream
 }
 
-func (x *watchServiceWatchClient) Recv() (*MatchPodResponse, error) {
-	m := new(MatchPodResponse)
+func (x *watchServiceWatchPodClient) Recv() (*WatchResponse, error) {
+	m := new(WatchResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (x *watchServiceWatchClient) Recv() (*MatchPodResponse, error) {
 // All implementations must embed UnimplementedWatchServiceServer
 // for forward compatibility
 type WatchServiceServer interface {
-	Watch(*MatchPodCondition, WatchService_WatchServer) error
+	WatchPod(*MatchCondition, WatchService_WatchPodServer) error
 	mustEmbedUnimplementedWatchServiceServer()
 }
 
@@ -72,8 +72,8 @@ type WatchServiceServer interface {
 type UnimplementedWatchServiceServer struct {
 }
 
-func (UnimplementedWatchServiceServer) Watch(*MatchPodCondition, WatchService_WatchServer) error {
-	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+func (UnimplementedWatchServiceServer) WatchPod(*MatchCondition, WatchService_WatchPodServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchPod not implemented")
 }
 func (UnimplementedWatchServiceServer) mustEmbedUnimplementedWatchServiceServer() {}
 
@@ -88,24 +88,24 @@ func RegisterWatchServiceServer(s grpc.ServiceRegistrar, srv WatchServiceServer)
 	s.RegisterService(&_WatchService_serviceDesc, srv)
 }
 
-func _WatchService_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(MatchPodCondition)
+func _WatchService_WatchPod_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(MatchCondition)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(WatchServiceServer).Watch(m, &watchServiceWatchServer{stream})
+	return srv.(WatchServiceServer).WatchPod(m, &watchServiceWatchPodServer{stream})
 }
 
-type WatchService_WatchServer interface {
-	Send(*MatchPodResponse) error
+type WatchService_WatchPodServer interface {
+	Send(*WatchResponse) error
 	grpc.ServerStream
 }
 
-type watchServiceWatchServer struct {
+type watchServiceWatchPodServer struct {
 	grpc.ServerStream
 }
 
-func (x *watchServiceWatchServer) Send(m *MatchPodResponse) error {
+func (x *watchServiceWatchPodServer) Send(m *WatchResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -115,8 +115,8 @@ var _WatchService_serviceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Watch",
-			Handler:       _WatchService_Watch_Handler,
+			StreamName:    "WatchPod",
+			Handler:       _WatchService_WatchPod_Handler,
 			ServerStreams: true,
 		},
 	},
