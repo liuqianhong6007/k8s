@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 
@@ -128,5 +130,17 @@ func (s *Server) Listen() {
 	log.Println("game service grpc server listen at: ", s.addr)
 	if err := s.grpcServer.Serve(s.lis); err != nil {
 		panic(err)
+	}
+}
+
+func (s *Server) SetPodLabels() {
+	namespace := os.Getenv("NAMESPACE")
+	podName := os.Getenv("HOSTNAME")
+	log.Println("pod namespace: ", namespace)
+	log.Println("pod name: ", podName)
+
+	_, err := s.clientset.CoreV1().Pods(namespace).Patch(context.Background(), podName, types.MergePatchType, []byte(`{ "metadata": { "labels": { "status": "ready" } }}`), metav1.PatchOptions{})
+	if err != nil {
+		log.Println(err)
 	}
 }

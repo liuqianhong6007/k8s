@@ -13,22 +13,20 @@ type Config struct {
 	CfgPath string `yaml:"cfg_path"`
 }
 
+// 全局配置参数
 var gConfig Config
 
 func ReadConfig(filepath string) {
 	util.ReadConfig(filepath, &gConfig)
 }
 
-func Cfg() *Config {
-	return &gConfig
-}
+func Cfg() *Config { return &gConfig }
 
+// 全局 kubernetes 客户端
 var gClientset *kubernetes.Clientset
 
 func InitK8sClientset(inner bool, cfgPath string) {
 	gClientset = util.NewKubernetesClientset(inner, cfgPath)
 }
 
-func K8sClientset() *kubernetes.Clientset {
-	return gClientset
-}
+func K8sClientset() *kubernetes.Clientset { return gClientset }
