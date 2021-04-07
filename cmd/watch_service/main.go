@@ -17,6 +17,6 @@ func init() {
 
 func main() {
 	server := grpc.NewServer(addr)
-	server.SetPodLabels()
+	server.SetPodLabels(addr)
 	server.Listen()
 }

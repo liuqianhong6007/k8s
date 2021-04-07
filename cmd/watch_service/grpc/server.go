@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -88,12 +88,11 @@ func (s *Server) WatchPod(in *protocol.MatchCondition, stream protocol.WatchServ
 			if !ok {
 				continue
 			}
-			buff, _ := json.Marshal(pod)
 			stream.Send(&protocol.WatchResponse{
 				Status: protocol.WatchResponse_Ok,
 				Action: protocol.WatchResponse_Add,
 				Name:   pod.Name,
-				Detail: string(buff),
+				Addr:   pod.Annotations["addr"],
 			})
 
 		case watch.Deleted:
@@ -102,12 +101,11 @@ func (s *Server) WatchPod(in *protocol.MatchCondition, stream protocol.WatchServ
 			if !ok {
 				continue
 			}
-			buff, _ := json.Marshal(pod)
 			stream.Send(&protocol.WatchResponse{
 				Status: protocol.WatchResponse_Ok,
 				Action: protocol.WatchResponse_Delete,
 				Name:   pod.Name,
-				Detail: string(buff),
+				Addr:   pod.Annotations["addr"],
 			})
 		case watch.Modified:
 			log.Println("receive modify event")
@@ -133,13 +131,13 @@ func (s *Server) Listen() {
 	}
 }
 
-func (s *Server) SetPodLabels() {
+func (s *Server) SetPodLabels(addr string) {
 	namespace := os.Getenv("NAMESPACE")
+	podIP := os.Getenv("POD_IP")
 	podName := os.Getenv("HOSTNAME")
-	log.Println("pod namespace: ", namespace)
-	log.Println("pod name: ", podName)
 
-	_, err := s.clientset.CoreV1().Pods(namespace).Patch(context.Background(), podName, types.MergePatchType, []byte(`{ "metadata": { "labels": { "status": "ready" } }}`), metav1.PatchOptions{})
+	data := fmt.Sprintf(`{ "metadata": { "annotations": { "addr": "%s%s" } } }`, podIP, addr)
+	_, err := s.clientset.CoreV1().Pods(namespace).Patch(context.Background(), podName, types.MergePatchType, []byte(data), metav1.PatchOptions{})
 	if err != nil {
 		log.Println(err)
 	}

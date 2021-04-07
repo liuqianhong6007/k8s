@@ -26,18 +26,27 @@ spec:
       labels:
         app: k8s-service
     spec:
+      serviceAccountName: myserviceaccount      
       containers:
       - name: k8s-service
         image:  lqha.xyz/k8s_service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8082
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP        
         args:
           - "--config=/app/config/config.yaml"
         volumeMounts:
         - name: config-volume
           mountPath:  /app/config
-
       volumes:
       - name: config-volume
         configMap:
@@ -58,5 +67,3 @@ data:
     port: 8082
     inner: true
     cfg_path: .kube/config
-  
-

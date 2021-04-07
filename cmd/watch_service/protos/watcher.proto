@@ -23,6 +23,6 @@ message WatchResponse{
   }
   ResponseStatus status = 1; // 返回状态
   string name = 2; // pod 名称
-  string detail = 3; // pod 详情
+  string addr = 3; // pod 详情
   Action action = 4; // 行为
 }

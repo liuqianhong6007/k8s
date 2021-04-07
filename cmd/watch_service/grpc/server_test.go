@@ -32,9 +32,9 @@ func TestServer_WatchPod(t *testing.T) {
 			t.Fatal(err)
 		}
 		if rsp.Status == protocol.WatchResponse_Ok {
-			t.Logf("[pod] name: %s,action: %d", rsp.Name, rsp.Action)
+			t.Logf("name: %s,addr: %s,action: %d", rsp.Name, rsp.Addr, rsp.Action)
 		} else {
-			t.Logf("[pod] status: %d", rsp.Status)
+			t.Logf("status: %d", rsp.Status)
 		}
 	}
 }
