@@ -20,6 +20,7 @@ message WatchResponse{
   enum Action{
     Add = 0; // 添加
     Delete = 1; // 删除
+    Modify = 2; // 修改
   }
   ResponseStatus status = 1; // 返回状态
   string name = 2; // pod 名称

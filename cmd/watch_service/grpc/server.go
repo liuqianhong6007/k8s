@@ -109,6 +109,16 @@ func (s *Server) WatchPod(in *protocol.MatchCondition, stream protocol.WatchServ
 			})
 		case watch.Modified:
 			log.Println("receive modify event")
+			pod, ok := event.Object.(*v1.Pod)
+			if !ok {
+				continue
+			}
+			stream.Send(&protocol.WatchResponse{
+				Status: protocol.WatchResponse_Ok,
+				Action: protocol.WatchResponse_Modify,
+				Name:   pod.Name,
+				Addr:   pod.Annotations["addr"],
+			})
 
 		case watch.Error:
 			log.Println("receive error event")
